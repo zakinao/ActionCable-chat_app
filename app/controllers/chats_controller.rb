@@ -14,6 +14,7 @@ class ChatsController < ApplicationController
 
   # GET /chats/new
   def new
+    @chats = Chat.all
     @chat = Chat.new
   end
 
@@ -28,11 +29,13 @@ class ChatsController < ApplicationController
 
     respond_to do |format|
       if @chat.save
-        format.html { redirect_to @chat, notice: "Chat was successfully created." }
-        format.json { render :show, status: :created, location: @chat }
+        ActionCable.server.broadcast 'room_channel', content: @chat
+        format.html {redirect_to @chat}
+        format.json {render :show, status: :created, location: @chat}
+        format.js
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @chat.errors, status: :unprocessable_entity }
+        format.html {render :new}
+        format.json {render json: @chat.errors, status: :unprocessable_entity}
       end
     end
   end
